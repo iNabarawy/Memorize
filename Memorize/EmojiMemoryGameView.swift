@@ -9,47 +9,60 @@ import SwiftUI
 
 struct EmojiMemoryGameView: View {
 	
-	var viewModel: EmojiMemoryGame
-
+	@ObservedObject var viewModel: EmojiMemoryGame
+	
+	private let aspectRatio: CGFloat = 2/3
+	
 	var body: some View {
-			ScrollView {
-				cards
+		VStack {
+			cards
+				.animation(.default, value: viewModel.cards)
+			
+			Button("Shuffle") {
+				viewModel.shuffle()
+			}
 		}
 		.padding()
 	}
-
-	var cards: some View {
-		LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))]) {
-			ForEach(viewModel.cards.indices, id:\.self) {
-				CardView(content: viewModel.cards[$0].content)
-					.aspectRatio(2/3, contentMode: .fit)
-			}
+	
+	private var cards: some View {
+		AspectVGrid(viewModel.cards, aspectRatio: aspectRatio) { card in
+			CardView(card)
+				.padding(4)
+				.onTapGesture {
+					viewModel.choose(card)
+				}
 		}
 		.foregroundColor(.orange)
 	}
 }
 
 struct CardView: View {
-	let content: String
-	@State var isFaceUp = true
+	let card: MemoryGame<String>.Card
+	
+	init(_ card: MemoryGame<String>.Card) {
+		self.card = card
+	}
+	
 	var body: some View {
 		ZStack {
 			let base = RoundedRectangle(cornerRadius: 12)
 			Group {
 				base.foregroundColor(.white)
 				base.strokeBorder(lineWidth: 2)
-				Text(content).font(.largeTitle)
+				Text(card.content)
+					.font(.system(size: 200))
+					.minimumScaleFactor(0.01)
+					.aspectRatio(1, contentMode: .fit)
 			}
-			.opacity(isFaceUp ? 1 : 0)
+			.opacity(card.isFaceUp ? 1 : 0)
 			
-			base.fill().opacity(isFaceUp ? 0 : 1)
+			base.fill().opacity(card.isFaceUp ? 0 : 1)
 		}
-		.onTapGesture {
-			isFaceUp.toggle()
-		}
+		.opacity(card.isFaceUp || !card.isMatched ? 1 : 0)
 	}
 }
 
 #Preview {
-    EmojiMemoryGameView()
+	EmojiMemoryGameView(viewModel: EmojiMemoryGame())
 }
