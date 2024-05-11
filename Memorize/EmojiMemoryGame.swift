@@ -12,7 +12,7 @@ class EmojiMemoryGame: ObservableObject {
 	typealias Card = MemoryGame<String>.Card
 
 	private static let emojis = ["🍔","☃️","🥃","🏀","⚽️","🎪", "🚣‍♀️"]
-	@Published private var model = MemoryGame(numberOfPairsOfCards: 10) {
+	@Published private var model = MemoryGame(numberOfPairsOfCards: 2) {
 		guard $0 < emojis.count else {
 			return "No"
 		}
